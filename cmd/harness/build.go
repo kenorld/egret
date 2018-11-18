@@ -1,6 +1,8 @@
 package harness
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -18,6 +20,29 @@ import (
 )
 
 var importErrorPattern = regexp.MustCompile("cannot find package \"([^\"]+)\"")
+
+func getModuleNameFromModfile(fpath string) (string, error) {
+	file, err := os.Open(fpath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	// Start reading from the file with a reader.
+	reader := bufio.NewReader(file)
+
+	var line string
+	for {
+		line, err = reader.ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+		if line[0:6] == "module" {
+			return strings.TrimSpace(strings.Split(line, " ")[1]), nil
+		}
+	}
+	return "", errors.New("parse module file unknown error")
+}
 
 // Build the app:
 // 1. Generate the the main.go file.
@@ -46,8 +71,22 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 	// // Binary path is a combination of $GOBIN/egret.d directory, app's import path and its name.
 	// binName := filepath.Join(pkg.BinDir, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
 
+	binName := ""
 	binPath := filepath.Join(os.Getenv("GOPATH"), "bin")
-	binName := filepath.Join(binPath, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
+	currPath, _ := filepath.Abs("./")
+	modFile := filepath.Join(currPath, "go.mod")
+	if _, err := os.Stat(modFile); err == nil {
+		if modName, err := getModuleNameFromModfile(modFile); err == nil {
+			if modName == egret.ImportPath || egret.ImportPath == "" {
+				binName = filepath.Join(binPath, "egret.d", modName, filepath.Base(modName))
+				logger.Info("App is build in go modules mode")
+			}
+		}
+	}
+	if binName == "" {
+		binName = filepath.Join(binPath, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
+		logger.Info("App is build in go path mode")
+	}
 
 	// Change binary path for Windows build
 	goos := runtime.GOOS
