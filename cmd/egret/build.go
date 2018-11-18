@@ -6,8 +6,8 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/kenorld/egret"
 	"github.com/kenorld/egret/cmd/harness"
-	egret "github.com/kenorld/egret/core"
 )
 
 var cmdBuild = &Command{
