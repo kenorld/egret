@@ -1,0 +1,4 @@
+<error>
+	<title>{{.Error.Title}}</title>
+	<summary>{{.Error.Summary}}</summary>
+</error>
