@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 
 	"github.com/kenorld/egret"
+	"github.com/kenorld/egret/core/logging"
 	"github.com/kenorld/egret/cron"
-	"github.com/kenorld/egret/logging"
 	"go.uber.org/zap"
 )
 

@@ -17,11 +17,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kenorld/egret/logging"
+	conf "github.com/kenorld/egret/conf"
+	"github.com/kenorld/egret/core/logging"
 	"github.com/kenorld/egret/serializer"
 	"github.com/kenorld/egret/template"
 	"github.com/kenorld/egret/template/native"
-	conf "github.com/kenorld/egret/conf"
 	"github.com/spf13/cast"
 	strcase "github.com/stoewer/go-strcase"
 
