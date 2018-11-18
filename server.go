@@ -14,7 +14,7 @@ import (
 
 	"go.uber.org/zap"
 
-	enet "github.com/kenorld/egret/net"
+	enet "github.com/kenorld/egret/core/net"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/net/websocket"
 )

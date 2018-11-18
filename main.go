@@ -19,9 +19,9 @@ import (
 
 	conf "github.com/kenorld/egret/conf"
 	"github.com/kenorld/egret/core/logging"
-	"github.com/kenorld/egret/serializer"
-	"github.com/kenorld/egret/template"
-	"github.com/kenorld/egret/template/native"
+	"github.com/kenorld/egret/core/serializer"
+	""github.com/kenorld/egret/core/template"
+	""github.com/kenorld/egret/core/template/native"
 	"github.com/spf13/cast"
 	strcase "github.com/stoewer/go-strcase"
 
