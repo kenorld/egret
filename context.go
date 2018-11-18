@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	"go.uber.org/zap"
 	"github.com/spf13/cast"
+	"go.uber.org/zap"
 )
 
 type (

@@ -4,6 +4,7 @@ require (
 	github.com/Unknwon/i18n v0.0.0-20171114194641-b64d33658966
 	github.com/agtorre/gocolorize v1.0.0
 	github.com/bradfitz/gomemcache v0.0.0-20180710155616-bc664df96737
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51
 	github.com/facebookgo/freeport v0.0.0-20150612182905-d4adf43b75b9

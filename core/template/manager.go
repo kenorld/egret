@@ -123,7 +123,7 @@ func (m *Manager) ExecuteWriter(out io.Writer, name string, binding interface{},
 
 	entry := m.Entries.Find(name)
 	if entry == nil {
-		return fmt.Errorf("Template %s was not found", name)
+		return fmt.Errorf("template %s was not found", name)
 	}
 
 	// if m.Reload {

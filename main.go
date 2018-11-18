@@ -280,7 +280,7 @@ func Init(mode, importPath, srcPath string) {
 	TemplatePaths = []string{
 		filepath.Join(AppCorePath, "views"),
 		path.Join(EgretPath, "core/views"),
-	} // Load app.yaml
+	}
 	var err error
 
 	Config, err = conf.LoadContext("app", ConfPaths)
@@ -487,7 +487,7 @@ func loadModules() {
 
 		modulePath, err := ResolveImportPath(moduleImportPath)
 		if err != nil {
-			log.Fatalln("Failed to load module.  Import of", moduleImportPath, "failed:", err)
+			log.Fatalln("Failed to load module. Import of", moduleImportPath, "failed:", err)
 		}
 		addModule(key[len("module."):], moduleImportPath, modulePath)
 	}
