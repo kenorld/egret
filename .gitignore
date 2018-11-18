@@ -1,0 +1,11 @@
+tmp/
+routes/
+test-results/
+egret/egret
+
+# editor
+*.swp
+
+.idea/
+*.iml
+

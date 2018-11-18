@@ -1,0 +1,1 @@
+go run main.go -port=4411 -importPath=github.com/kenorld/xlh-server -runMode=dev
