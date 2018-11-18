@@ -85,7 +85,7 @@ func NewHarness(logger *zap.Logger) *Harness {
 	// Get a template loader to render errors.
 	// Prefer the app's views/errors directory, and fall back to the stock error pages.
 	// egret.MainTemplateLoader = egret.NewTemplateLoader(
-	// 	[]string{filepath.Join(egret.EgretPath, "views")})
+	// 	[]string{filepath.Join(egret.EgretPath, "core/views")})
 	// egret.MainTemplateLoader.Refresh()
 
 	addr := egret.HttpAddr

@@ -273,13 +273,13 @@ func Init(mode, importPath, srcPath string) {
 	ConfPaths = append(
 		[]string{
 			filepath.Join(BasePath, "conf"),
-			filepath.Join(EgretPath, "conf"),
+			filepath.Join(EgretPath, "core/conf"),
 		},
 		ConfPaths...)
 
 	TemplatePaths = []string{
 		filepath.Join(AppCorePath, "views"),
-		path.Join(EgretPath, "views"),
+		path.Join(EgretPath, "core/views"),
 	} // Load app.yaml
 	var err error
 
@@ -352,7 +352,7 @@ func initTemplate() {
 		tmpl = native.New(cfg)
 		UseTemplate(tmpl).Register(bpath, ".txt")
 
-		bpath = filepath.Join(EgretPath, "views")
+		bpath = filepath.Join(EgretPath, "core/views")
 		cfg = native.Config{Layout: template.NoLayout}
 		tmpl = native.New(cfg)
 		UseTemplate(tmpl).Register(bpath, ".html")

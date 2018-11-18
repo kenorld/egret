@@ -34,6 +34,8 @@ github.com/kenorld/blackfriday v2.0.0+incompatible h1:axNbSKPL8F1DabPGiSu0jYLARU
 github.com/kenorld/blackfriday v2.0.0+incompatible/go.mod h1:FNg823WbRb2BGT92wV9OWuH3XVBjF0ZzX4SdOwTzf0c=
 github.com/kenorld/egret-conf v0.0.0-20170311080023-5358f640da69 h1:b9/h4kTrN3WeXJf5OVzYCkBn7ja4GYK/cU+NRVDhSi0=
 github.com/kenorld/egret-conf v0.0.0-20170311080023-5358f640da69/go.mod h1:Tlw87LJ9JdBNKBZJgzZ83m07YTa5x9Moi5T1tXdWafc=
+github.com/kenorld/egret-core v0.2.0 h1:JmO0M4VIw21qgy09Ct9JMWUyMBGXNPUxEaZpnnoB/78=
+github.com/kenorld/egret-core v0.2.0/go.mod h1:efnLGMHpALsMNn0Rc4WdwZCmgSOIAWtrB7SNC6u6qJ4=
 github.com/kenorld/egret/core v0.2.0 h1:JmO0M4VIw21qgy09Ct9JMWUyMBGXNPUxEaZpnnoB/78=
 github.com/kenorld/egret/core v0.2.0/go.mod h1:efnLGMHpALsMNn0Rc4WdwZCmgSOIAWtrB7SNC6u6qJ4=
 github.com/klauspost/compress v1.4.1 h1:8VMb5+0wMgdBykOV96DwNwKFQ+WTI4pzYURP99CcB9E=

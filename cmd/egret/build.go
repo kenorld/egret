@@ -77,8 +77,8 @@ func buildApp(args []string) {
 	tmpEgretPath := path.Join(srcPath, filepath.FromSlash(egret.EgretCoreImportPath))
 	mustCopyFile(destBinaryPath, app.BinaryPath)
 	mustChmod(destBinaryPath, 0755)
-	mustCopyDir(path.Join(tmpEgretPath, "conf"), path.Join(egret.EgretPath, "conf"), false, nil)
-	mustCopyDir(path.Join(tmpEgretPath, "views"), path.Join(egret.EgretPath, "views"), false, nil)
+	mustCopyDir(path.Join(tmpEgretPath, "conf"), path.Join(egret.EgretPath, "core/conf"), false, nil)
+	mustCopyDir(path.Join(tmpEgretPath, "views"), path.Join(egret.EgretPath, "core/views"), false, nil)
 
 	tmplData, runShPath := map[string]interface{}{
 		"BinName":    filepath.Base(app.BinaryPath),
