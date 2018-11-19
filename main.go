@@ -263,13 +263,6 @@ func Init(mode, importPath, srcPath string) {
 		BasePath = filepath.Join(srcPath, filepath.FromSlash(importPath))
 	}
 	SourcePath = srcPath
-	Logger.Info("Envirment variables",
-		zap.String("ImportPath", ImportPath),
-		zap.String("EgretPath", EgretPath),
-		zap.String("SourcePath", SourcePath),
-		zap.String("BasePath", BasePath),
-		zap.String("RunMode", RunMode),
-	)
 
 	CodePaths = []string{BasePath}
 
@@ -339,7 +332,22 @@ func Init(mode, importPath, srcPath string) {
 
 	DateTimeFormat = Config.GetStringDefault("format.datetime", DefaultDateTimeFormat)
 	DateFormat = Config.GetStringDefault("format.date", DefaultDateFormat)
-	// Initialized = true
+	Logger.Info("Envirment variables",
+		zap.String("ImportPath", ImportPath),
+		zap.String("EgretPath", EgretPath),
+		zap.String("SourcePath", SourcePath),
+		zap.String("BasePath", BasePath),
+		zap.String("DateTimeFormat", DateTimeFormat),
+		zap.String("DateFormat", DateFormat),
+		zap.String("AppName", AppName),
+		zap.String("AppRoot", AppRoot),
+		zap.String("CookiePrefix", CookiePrefix),
+		zap.String("CookieDomain", CookieDomain),
+		zap.Bool("CookieSecure", CookieSecure),
+		zap.String("TemplateDelims", TemplateDelims),
+		zap.Strings("ConfPaths", ConfPaths),
+		zap.Strings("TemplatePaths", TemplatePaths),
+	)
 	Logger.Info("Egret initialized", zap.String("version", Version), zap.String("build_date", BuildDate), zap.String("miniumn_go_version", MinimumGoVersion))
 
 	initTemplate()
