@@ -50,9 +50,6 @@ func testApp(args []string) {
 	if len(args) == 0 {
 		args[0] = ""
 	}
-	if args[0] == "." || args[0] == "./" {
-		args[0] = ""
-	}
 
 	mode := "dev"
 	if len(args) >= 2 {

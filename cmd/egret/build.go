@@ -44,9 +44,6 @@ func buildApp(args []string) {
 	if len(args) >= 3 {
 		mode = args[2]
 	}
-	if appImportPath == "." || appImportPath == "./" {
-		appImportPath = ""
-	}
 
 	if !egret.Initialized {
 		egret.Init(mode, appImportPath, "")
@@ -74,7 +71,7 @@ func buildApp(args []string) {
 
 	// Egret and the app are in a directory structure mirroring import path
 	destBinaryPath := path.Join(destPath, filepath.Base(app.BinaryPath))
-	tmpEgretPath := path.Join(srcPath, filepath.FromSlash(egret.EgretCoreImportPath))
+	tmpEgretPath := path.Join(srcPath, filepath.FromSlash(egret.EgretImportPath))
 	mustCopyFile(destBinaryPath, app.BinaryPath)
 	mustChmod(destBinaryPath, 0755)
 	mustCopyDir(path.Join(tmpEgretPath, "conf"), path.Join(egret.EgretPath, "core", "conf"), true, nil)

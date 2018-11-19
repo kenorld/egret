@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"go/build"
 	"os"
 	"os/exec"
 	"path"
@@ -72,20 +73,21 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 	// binName := filepath.Join(pkg.BinDir, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
 
 	binName := ""
-	binPath := filepath.Join(os.Getenv("GOPATH"), "bin")
-	currPath, _ := filepath.Abs("./")
-	modFile := filepath.Join(currPath, "go.mod")
-	if _, err := os.Stat(modFile); err == nil {
-		if modName, err := getModuleNameFromModfile(modFile); err == nil {
-			if modName == egret.ImportPath || egret.ImportPath == "" {
-				binName = filepath.Join(binPath, "egret.d", modName, filepath.Base(modName))
-				logger.Info("App is build in go modules mode")
+	if egret.IsGoModule {
+		if modName, err := egret.GetModuleName(); err == nil {
+			binName = filepath.Join(egret.BasePath, "bin", filepath.Base(modName))
+			logger.Info("App is build in go modules mode")
+		} else {
+			logger.Fatal("Failed to get module name")
+		}
+	} else {
+		for _, gopath := range filepath.SplitList(build.Default.GOPATH) {
+			if strings.HasPrefix(egret.BasePath, gopath) {
+				binName = filepath.Join(gopath, "bin", "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
+				logger.Info("App is build in go path mode")
+				break
 			}
 		}
-	}
-	if binName == "" {
-		binName = filepath.Join(binPath, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
-		logger.Info("App is build in go path mode")
 	}
 
 	// Change binary path for Windows build

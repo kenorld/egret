@@ -36,9 +36,6 @@ func runApp(args []string) {
 	if len(args) == 0 {
 		args[0] = ""
 	}
-	if args[0] == "." || args[0] == "./" {
-		args[0] = ""
-	}
 
 	// Determine the run mode.
 	mode := "dev"
@@ -60,10 +57,10 @@ func runApp(args []string) {
 	}
 
 	logger.Info("Running...",
-		zap.String("app_name", egret.AppName),
-		zap.String("import_path", egret.ImportPath),
-		zap.String("mode", mode),
-		zap.String("base_path", egret.BasePath),
+		zap.String("AppName", egret.AppName),
+		zap.String("ImportPath", egret.ImportPath),
+		zap.String("Mode", mode),
+		zap.String("BasePath", egret.BasePath),
 	)
 
 	// If the app is run in "watched" mode, use the harness to run it.

@@ -118,7 +118,6 @@ render:
     #eager||normal
     mode: normal
     
-
   logger:
     outputs: {_: ["stdout"], error: ["stderr"]}
     level: "info"

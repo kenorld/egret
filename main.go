@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	// EgretCoreImportPath egret core improt path
-	EgretCoreImportPath   = "github.com/kenorld/egret"
+	// EgretImportPath egret core improt path
+	EgretImportPath       = "github.com/kenorld/egret"
 	DefaultDateFormat     = "2006-01-02"
 	DefaultDateTimeFormat = "2006-01-02 15:04"
 )
@@ -43,16 +43,17 @@ var (
 	ImportPath  string // e.g. "corp/sample"
 	SourcePath  string // e.g. "/Users/user/gocode/src"
 
+	// Egret installation details
+	EgretPath string // e.g. "/Users/user/gocode/src/egret"
+
 	invalidSlugPattern = regexp.MustCompile(`[^a-z0-9 _-]`)
 	whiteSpacePattern  = regexp.MustCompile(`\s+`)
 	Logger             *zap.Logger
 
-	Config  *conf.Context
-	RunMode string // Application-defined (by default, "dev" or "prod")
-	DevMode bool   // if true, RunMode is a development mode.
-
-	// Egret installation details
-	EgretPath string // e.g. "/Users/user/gocode/src/egret-core"
+	Config     *conf.Context
+	RunMode    string // Application-defined (by default, "dev" or "prod")
+	DevMode    bool   // if true, RunMode is a development mode.
+	IsGoModule bool
 
 	// Where to look for templates
 	// Ordered by priority. (Earlier paths take precedence over later paths.)
@@ -65,6 +66,7 @@ var (
 	// 2. application (conf/*)
 	// 3. user supplied configs (...) - User configs can override/add any from above
 	ConfPaths []string
+	GoPaths   []string
 
 	Modules []Module
 
@@ -214,6 +216,7 @@ var (
 )
 
 func init() {
+	GoPaths = filepath.SplitList(build.Default.GOPATH)
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic("Can not create logger")
@@ -231,33 +234,33 @@ func init() {
 func Init(mode, importPath, srcPath string) {
 	// Ignore trailing slashes.
 	ImportPath = strings.TrimRight(importPath, "/")
-	SourcePath = srcPath
 	RunMode = mode
+	IsGoModule = IsGoModuleMode()
 
 	// If the SourcePath is not specified, find it using build.Import.
-	var egretSourcePath string // may be different from the app source path
-	if SourcePath == "" {
-		egretSourcePath, SourcePath = findSrcPaths(importPath)
+	if srcPath == "" {
+		EgretPath, srcPath = findSrcPaths(ImportPath)
 	} else {
 		// If the SourcePath was specified, assume both Egret and the app are within it.
-		SourcePath = path.Clean(SourcePath)
-		egretSourcePath = SourcePath
+		srcPath = path.Clean(srcPath)
+		EgretPath = filepath.Join(srcPath, filepath.FromSlash(EgretImportPath))
 		packaged = true
 	}
-
-	EgretPath = filepath.Join(egretSourcePath, filepath.FromSlash(EgretCoreImportPath))
-	currPath, _ := filepath.Abs("./")
-	modFile := filepath.Join(currPath, "go.mod")
-	if _, err := os.Stat(modFile); err == nil {
-		if modName, err := getModuleNameFromModfile(modFile); err == nil {
-			if modName == importPath || importPath == "" {
-				BasePath = currPath
-			}
+	if IsGoModule {
+		if ImportPath != "" && ImportPath[0] != '.' {
+			p, _ := filepath.Abs(".")
+			BasePath = p
+		} else {
+			p, _ := filepath.Abs(ImportPath)
+			BasePath = p
 		}
+	} else {
+		BasePath = filepath.Join(srcPath, filepath.FromSlash(importPath))
 	}
-	if BasePath == "" {
-		BasePath = filepath.Join(SourcePath, filepath.FromSlash(importPath))
-	}
+	SourcePath = srcPath
+	Logger.Info("EgretPath: " + EgretPath)
+	Logger.Info("SourcePath: " + SourcePath)
+	Logger.Info("BasePath: " + BasePath)
 	AppCorePath = filepath.Join(BasePath, "core")
 
 	CodePaths = []string{AppCorePath}
@@ -327,13 +330,12 @@ func Init(mode, importPath, srcPath string) {
 
 	DateTimeFormat = Config.GetStringDefault("format.datetime", DefaultDateTimeFormat)
 	DateFormat = Config.GetStringDefault("format.date", DefaultDateFormat)
-
 	// Initialized = true
 	Logger.Info("Egret initialized", zap.String("version", Version), zap.String("build_date", BuildDate), zap.String("miniumn_go_version", MinimumGoVersion))
 
 	initTemplate()
 	initSerializer()
-
+	loadModules()
 	Initialized = true
 	runStartupHooks()
 }
@@ -386,6 +388,9 @@ func initLog() {
 	for key, value := range rawConfig {
 		frawConfig[strcase.LowerCamelCase(key)] = value
 	}
+	if frawConfig["level"] == nil {
+		frawConfig["level"] = "info"
+	}
 	feconfig := map[string]interface{}{
 		"messageKey":   "message",
 		"levelKey":     "level",
@@ -410,6 +415,10 @@ func initLog() {
 	Logger = logger
 }
 
+func GetModuleName() (string, error) {
+	currPath, _ := filepath.Abs("./")
+	return getModuleNameFromModfile(filepath.Join(currPath, "go.mod"))
+}
 func getModuleNameFromModfile(fpath string) (string, error) {
 	file, err := os.Open(fpath)
 	if err != nil {
@@ -433,8 +442,25 @@ func getModuleNameFromModfile(fpath string) (string, error) {
 	return "", errors.New("parse module file unknown error")
 }
 
+func IsGoModuleMode() bool {
+	if ImportPath == "" || ImportPath[0] == '.' {
+		return true
+	}
+	modName, _ := GetModuleName()
+	return modName != "" && modName == ImportPath
+}
+
+func IsUnderGoPaths(fpath string) bool {
+	for _, gopath := range GoPaths {
+		if strings.HasPrefix(fpath, gopath) {
+			return true
+		}
+	}
+	return false
+}
+
 // findSrcPaths uses the "go/build" package to find the source root for Egret
-// and the app.
+// and the app. return egretSourcePath, appSourcePath
 func findSrcPaths(importPath string) (egretSourcePath, appSourcePath string) {
 	var (
 		gopaths = filepath.SplitList(build.Default.GOPATH)
@@ -452,26 +478,26 @@ func findSrcPaths(importPath string) (egretSourcePath, appSourcePath string) {
 		)
 	}
 
-	egretPkg, err := build.Import(EgretCoreImportPath, "", build.FindOnly)
-	if err != nil {
-		Logger.Fatal("Failed to find Egret", zap.Error(err))
-	}
-
-	currPath, _ := filepath.Abs("./")
-	modFile := filepath.Join(currPath, "go.mod")
-	if _, err := os.Stat(modFile); err == nil {
-		if modName, err := getModuleNameFromModfile(modFile); err == nil {
-			if modName == importPath || importPath == "" {
-				return egretPkg.SrcRoot, currPath
-			}
+	srcDir := ""
+	if IsGoModule {
+		modName, err := GetModuleName()
+		if err != nil {
+			Logger.Fatal("Failed to find module name", zap.Error(err))
 		}
+		srcDir = importPath
+		importPath = modName
 	}
 
-	appPkg, err := build.Import(importPath, "", build.FindOnly)
+	appPkg, err := build.Import(importPath, srcDir, build.FindOnly)
 	if err != nil {
 		Logger.Error("Failed to import", zap.String("import_path", importPath), zap.Error(err))
 	}
-	return egretPkg.SrcRoot, appPkg.SrcRoot
+	egretPkg, err := build.Import(EgretImportPath, appPkg.Dir, build.FindOnly)
+	if err != nil {
+		Logger.Fatal("Failed to find egret", zap.Error(err))
+	}
+
+	return egretPkg.Dir, appPkg.Dir
 }
 
 type Module struct {
@@ -504,7 +530,7 @@ func ResolveImportPath(importPath string) (string, error) {
 		return path.Join(SourcePath, importPath), nil
 	}
 
-	modPkg, err := build.Import(importPath, "", build.FindOnly)
+	modPkg, err := build.Import(importPath, EgretPath, build.FindOnly)
 	if err != nil {
 		return "", err
 	}
