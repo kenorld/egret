@@ -214,15 +214,6 @@ var (
 	}
 )
 
-func init() {
-	GoPaths = filepath.SplitList(build.Default.GOPATH)
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic("Can not create logger")
-	}
-	Logger = logger
-}
-
 // Init initializes Egret -- it provides paths for getting around the app.
 //
 // Params:
@@ -231,7 +222,22 @@ func init() {
 //   srcPath - the path to the source directory, containing Egret and the app.
 //     If not specified (""), then a functioning Go installation is required.
 func Init(mode, importPath, srcPath string) {
-	// Ignore trailing slashes.
+	GoPaths = filepath.SplitList(build.Default.GOPATH)
+	if mode == "prod" {
+		logger, err := zap.NewProduction()
+		if err != nil {
+			panic("Can not create logger")
+		}
+		Logger = logger
+	} else {
+		logger, err := zap.NewDevelopment()
+		if err != nil {
+			panic("Can not create logger")
+		}
+		Logger = logger
+	}
+	logging.Logger = Logger
+
 	ImportPath = strings.TrimRight(importPath, "/")
 	RunMode = mode
 	IsGoModule = IsGoModuleMode()
@@ -257,9 +263,13 @@ func Init(mode, importPath, srcPath string) {
 		BasePath = filepath.Join(srcPath, filepath.FromSlash(importPath))
 	}
 	SourcePath = srcPath
-	Logger.Info("EgretPath: " + EgretPath)
-	Logger.Info("SourcePath: " + SourcePath)
-	Logger.Info("BasePath: " + BasePath)
+	Logger.Info("Envirment variables",
+		zap.String("ImportPath", ImportPath),
+		zap.String("EgretPath", EgretPath),
+		zap.String("SourcePath", SourcePath),
+		zap.String("BasePath", BasePath),
+		zap.String("RunMode", RunMode),
+	)
 
 	CodePaths = []string{BasePath}
 
