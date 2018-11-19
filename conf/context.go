@@ -6,9 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/kenorld/egret/core/logging"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 )
 
 // Context structure handles the parsing of app.yaml
@@ -32,8 +30,6 @@ func LoadContext(confName string, confPaths []string) (*Context, error) {
 			err := v.ReadInConfig() // Find and read the config file
 			if err != nil {         // Handle errors reading the config file
 				panic(fmt.Errorf("Fatal error config file: %s \n", err))
-			} else {
-				logging.Logger.Info("Conf file loaded", zap.String("path", confPath))
 			}
 			ctx.vipers = append(ctx.vipers, v)
 		}

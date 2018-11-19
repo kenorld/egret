@@ -224,17 +224,17 @@ var (
 func Init(mode, importPath, srcPath string) {
 	GoPaths = filepath.SplitList(build.Default.GOPATH)
 	if mode == "prod" {
-		logger, err := zap.NewProduction()
-		if err != nil {
+		if logger, err := zap.NewProduction(); err == nil {
+			Logger = logger
+		} else {
 			panic("Can not create logger")
 		}
-		Logger = logger
 	} else {
-		logger, err := zap.NewDevelopment()
-		if err != nil {
+		if logger, err := zap.NewDevelopment(); err == nil {
+			Logger = logger
+		} else {
 			panic("Can not create logger")
 		}
-		Logger = logger
 	}
 	logging.Logger = Logger
 
@@ -253,11 +253,9 @@ func Init(mode, importPath, srcPath string) {
 	}
 	if IsGoModule {
 		if ImportPath != "" && ImportPath[0] != '.' {
-			p, _ := filepath.Abs(".")
-			BasePath = p
+			BasePath = srcPath
 		} else {
-			p, _ := filepath.Abs(ImportPath)
-			BasePath = p
+			BasePath = filepath.Join(srcPath, ImportPath)
 		}
 	} else {
 		BasePath = filepath.Join(srcPath, filepath.FromSlash(importPath))
@@ -265,10 +263,6 @@ func Init(mode, importPath, srcPath string) {
 	SourcePath = srcPath
 
 	CodePaths = []string{BasePath}
-
-	if ConfPaths == nil {
-		ConfPaths = []string{}
-	}
 
 	// Config load order
 	// 1. framework (egret/conf/*)
@@ -290,7 +284,7 @@ func Init(mode, importPath, srcPath string) {
 
 	Config, err = conf.LoadContext("app", ConfPaths)
 	if err != nil || Config == nil {
-		log.Fatalln("Failed to load app.yaml:", err)
+		Logger.Fatal("Failed to load app.yaml", zap.Error(err))
 	}
 
 	// if !Config.IsSet(mode) {
@@ -429,6 +423,7 @@ func initLog() {
 	if err != nil {
 		panic(err)
 	}
+	Logger.Sync()
 	Logger = logger
 }
 

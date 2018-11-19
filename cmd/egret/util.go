@@ -92,7 +92,8 @@ func mustCopyDir(destDir, srcDir string, skipGoFile bool, data map[string]interf
 		// If this file ends in ".template", render it as a template.
 		if strings.HasSuffix(relSrcPath, ".template") {
 			mustRenderTemplate(destPath[:len(destPath)-len(".template")], srcPath, data)
-		} else if !skipGoFile || (skipGoFile && !strings.HasSuffix(srcPath, ".go")) {
+		} else if !skipGoFile || (skipGoFile && !strings.HasSuffix(srcPath, ".go") &&
+			!strings.HasSuffix(srcPath, "/go.mod") && !strings.HasSuffix(srcPath, "/go.sum")) {
 			mustCopyFile(destPath, srcPath)
 		}
 		return nil
