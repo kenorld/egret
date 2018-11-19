@@ -75,7 +75,7 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 	binName := ""
 	if egret.IsGoModule {
 		if modName, err := egret.GetModuleName(); err == nil {
-			binName = filepath.Join(egret.BasePath, "bin", filepath.Base(modName))
+			binName = filepath.Join(egret.BasePath, "bin", ".tmp", filepath.Base(modName))
 			logger.Info("App is build in go modules mode")
 		} else {
 			logger.Fatal("Failed to get module name")
