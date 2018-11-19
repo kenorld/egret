@@ -36,12 +36,11 @@ const (
 )
 
 var (
-	AppName     string // e.g. "sample"
-	AppRoot     string // e.g. "/app1"
-	BasePath    string // e.g. "/Users/user/gocode/src/corp/sample"
-	AppCorePath string // e.g. "/Users/user/gocode/src/corp/sample/app"
-	ImportPath  string // e.g. "corp/sample"
-	SourcePath  string // e.g. "/Users/user/gocode/src"
+	AppName    string // e.g. "sample"
+	AppRoot    string // e.g. "/app1"
+	BasePath   string // e.g. "/Users/user/gocode/src/corp/sample"
+	ImportPath string // e.g. "corp/sample"
+	SourcePath string // e.g. "/Users/user/gocode/src"
 
 	// Egret installation details
 	EgretPath string // e.g. "/Users/user/gocode/src/egret"
@@ -261,9 +260,8 @@ func Init(mode, importPath, srcPath string) {
 	Logger.Info("EgretPath: " + EgretPath)
 	Logger.Info("SourcePath: " + SourcePath)
 	Logger.Info("BasePath: " + BasePath)
-	AppCorePath = filepath.Join(BasePath, "core")
 
-	CodePaths = []string{AppCorePath}
+	CodePaths = []string{BasePath}
 
 	if ConfPaths == nil {
 		ConfPaths = []string{}
@@ -281,7 +279,8 @@ func Init(mode, importPath, srcPath string) {
 		ConfPaths...)
 
 	TemplatePaths = []string{
-		filepath.Join(AppCorePath, "views"),
+		filepath.Join(BasePath, "views"),
+		filepath.Join(BasePath, "core", "views"),
 		path.Join(EgretPath, "core", "views"),
 	}
 	var err error
@@ -343,7 +342,7 @@ func initTemplate() {
 	MainTemplateManager = template.NewManager(SharedTemplateFunc)
 
 	if Config.GetBoolDefault("template.native.enabled", false) {
-		bpath := Config.GetStringDefault(filepath.Join(BasePath, "template.native.root"), filepath.Join(AppCorePath, "views"))
+		bpath := Config.GetStringDefault(filepath.Join(BasePath, "template.native.root"), filepath.Join(BasePath, "views"))
 		cfg := native.Config{Layout: Config.GetStringDefault("template.native.layout", template.NoLayout)}
 		tmpl := native.New(cfg)
 		UseTemplate(tmpl).Register(bpath, ".html")
@@ -547,12 +546,6 @@ func addModule(name, importPath, modulePath string) {
 	}
 
 	Logger.Info("Loaded module: " + filepath.Base(modulePath))
-
-	// Hack: There is presently no way for the testrunner module to add the
-	// "test" subdirectory to the CodePaths.  So this does it instead.
-	// if importPath == Config.StringDefault("module.testrunner", "github.com/egret/modules/testrunner") {
-	// 	CodePaths = append(CodePaths, filepath.Join(BasePath, "tests"))
-	// }
 }
 
 // ModuleByName returns the module of the given name, if loaded.
