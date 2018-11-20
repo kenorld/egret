@@ -3,7 +3,7 @@
 (https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A web framework for the [Go language](http://www.golang.org).
-Modified from https://github.com/revel/revel
+Modified from https://github.com/kenorld/egret/egret
 
 Current Version: 0.1.1 (2017-01-06)
 

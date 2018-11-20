@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kenorld/egret"
+	"github.com/kenorld/egret/cmd/utils"
 	"github.com/spf13/cast"
 	"go.uber.org/zap"
 )
@@ -20,16 +21,15 @@ type App struct {
 	BinaryPath string // Path to the app executable
 	Port       int    // Port to pass as a command line argument.
 	cmd        AppCmd // The last cmd returned.
-	logger     *zap.Logger
 }
 
-func NewApp(binPath string, logger *zap.Logger) *App {
-	return &App{BinaryPath: binPath, logger: logger}
+func NewApp(binPath string) *App {
+	return &App{BinaryPath: binPath}
 }
 
 // Return a command to run the app server using the current configuration.
 func (a *App) Cmd() AppCmd {
-	a.cmd = NewAppCmd(a.BinaryPath, a.Port, a.logger)
+	a.cmd = NewAppCmd(a.BinaryPath, a.Port)
 	return a.cmd
 }
 
@@ -42,35 +42,34 @@ func (a *App) Kill() {
 // It requires egret.Init to have been called previously.
 type AppCmd struct {
 	*exec.Cmd
-	logger *zap.Logger
 }
 
-func NewAppCmd(binPath string, port int, logger *zap.Logger) AppCmd {
+func NewAppCmd(binPath string, port int) AppCmd {
 	cmd := exec.Command(binPath,
 		fmt.Sprintf("-port=%d", port),
 		fmt.Sprintf("-importPath=%s", egret.ImportPath),
 		fmt.Sprintf("-runMode=%s", egret.RunMode))
 	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-	return AppCmd{cmd, logger}
+	return AppCmd{cmd}
 }
 
 // Start the app server, and wait until it is ready to serve requests.
 func (cmd AppCmd) Start() error {
 	listeningWriter := startupListeningWriter{os.Stdout, make(chan bool)}
 	cmd.Stdout = listeningWriter
-	cmd.logger.Info("Exec app", zap.String("path", cmd.Path), zap.Strings("args", cmd.Args))
+	utils.Logger.Info("Exec app", zap.String("path", cmd.Path), zap.Strings("args", cmd.Args))
 	if err := cmd.Cmd.Start(); err != nil {
-		cmd.logger.Error("Error running", zap.Error(err))
+		utils.Logger.Error("Error running", zap.Error(err))
 	}
 
 	select {
 	case <-cmd.waitChan():
-		cmd.logger.Error("egret/harness: app died")
+		utils.Logger.Error("egret/harness: app died")
 		return errors.New("egret/harness: app died")
 
 	case <-time.After(30 * time.Second):
 		cmd.Kill()
-		cmd.logger.Error("egret/harness: app timed out")
+		utils.Logger.Error("egret/harness: app timed out")
 		return errors.New("egret/harness: app timed out")
 
 	case <-listeningWriter.notifyReady:
@@ -81,19 +80,19 @@ func (cmd AppCmd) Start() error {
 
 // Run the app server inline.  Never returns.
 func (cmd AppCmd) Run() {
-	cmd.logger.Info("Exec app", zap.String("path", cmd.Path), zap.Strings("args", cmd.Args))
+	utils.Logger.Info("Exec app", zap.String("path", cmd.Path), zap.Strings("args", cmd.Args))
 	if err := cmd.Cmd.Run(); err != nil {
-		cmd.logger.Error("Error running", zap.Error(err))
+		utils.Logger.Error("Error running", zap.Error(err))
 	}
 }
 
 // Terminate the app server if it's running.
 func (cmd AppCmd) Kill() {
 	if cmd.Cmd != nil && (cmd.ProcessState == nil || !cmd.ProcessState.Exited()) {
-		cmd.logger.Info("Killing egret server pid: " + cast.ToString(cmd.Process.Pid))
+		utils.Logger.Info("Killing egret server pid: " + cast.ToString(cmd.Process.Pid))
 		err := cmd.Process.Kill()
 		if err != nil {
-			cmd.logger.Error("Failed to kill egret server", zap.Error(err))
+			utils.Logger.Error("Failed to kill egret server", zap.Error(err))
 		}
 	}
 }

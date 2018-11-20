@@ -13,6 +13,8 @@ import (
 
 	"github.com/kenorld/egret"
 	"github.com/kenorld/egret/cmd/harness"
+	"github.com/kenorld/egret/cmd/model"
+	"github.com/kenorld/egret/cmd/utils"
 )
 
 var cmdTest = &Command{
@@ -43,6 +45,25 @@ or one of UserTest's methods:
 
 func init() {
 	cmdTest.Run = testApp
+	cmdTest.UpdateConfig = updateTestConfig
+}
+
+// Called to update the config command with from the older stype
+func updateTestConfig(c *model.CommandConfig, args []string) bool {
+	c.Index = model.TEST
+	// The full test runs
+	// revel test <import path> (run mode) (suite(.function))
+	if len(args) < 1 {
+		return false
+	}
+	c.Test.ImportPath = args[0]
+	if len(args) > 1 {
+		c.Test.Mode = args[1]
+	}
+	if len(args) > 2 {
+		c.Test.Function = args[2]
+	}
+	return true
 }
 
 func testApp(args []string) {
@@ -92,7 +113,7 @@ func testApp(args []string) {
 		errorf("Failed to create log file: %s", err)
 	}
 
-	app, reverr := harness.Build(logger)
+	app, reverr := harness.Build()
 	if reverr != nil {
 		errorf("Error building: %s", reverr)
 	}
@@ -105,7 +126,7 @@ func testApp(args []string) {
 		errorf("%s", err)
 	}
 	defer cmd.Kill()
-	logger.Info("Testing...",
+	utils.Logger.Info("Testing...",
 		zap.String("app_name", egret.AppName),
 		zap.String("import_path", egret.ImportPath),
 		zap.String("mode", mode),

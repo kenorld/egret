@@ -6,7 +6,7 @@ This folder contains a middleware which enables net/http/pprof.
 ## Install
 
 ```sh
-$ go get -u github.com/egret-contrib/middleware/pprof
+$ go get -u github.com/kenorld/egret-contrib/middleware/pprof
 ```
 
 ## Usage
@@ -15,7 +15,7 @@ $ go get -u github.com/egret-contrib/middleware/pprof
 package main
 
 import (
-	"github.com/egret-contrib/middleware/pprof"
+	"github.com/kenorld/egret-contrib/middleware/pprof"
 	"github.com/kenorld/egret"
 )
 

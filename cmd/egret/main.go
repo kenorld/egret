@@ -13,12 +13,13 @@ import (
 	"time"
 
 	"github.com/agtorre/gocolorize"
-	"go.uber.org/zap"
+	"github.com/kenorld/egret/cmd/model"
 )
 
 // Command structure cribbed from the genius organization of the "go" command.
 type Command struct {
-	Run                    func(args []string)
+	UpdateConfig           func(c *model.CommandConfig, args []string) bool
+	RunWith                func(c *model.CommandConfig) error
 	UsageLine, Short, Long string
 }
 
@@ -39,12 +40,8 @@ var commands = []*Command{
 	cmdTest,
 	cmdVersion,
 }
-var logger *zap.Logger
 
 func main() {
-	lg, _ := zap.NewDevelopment()
-	logger = lg
-	defer logger.Sync()
 	if runtime.GOOS == "windows" {
 		gocolorize.SetPlain(true)
 	}
@@ -81,7 +78,7 @@ func main() {
 	// }()
 	for _, cmd := range commands {
 		if cmd.Name() == args[0] {
-			cmd.Run(args[1:])
+			cmd.RunWith(args[1:])
 			return
 		}
 	}

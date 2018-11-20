@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/kenorld/egret"
+	"github.com/kenorld/egret/cmd/model"
 )
 
 var cmdPackage = &Command{
@@ -28,7 +29,18 @@ For example:
 }
 
 func init() {
-	cmdPackage.Run = packageApp
+	cmdPackage.RunWith = packageApp
+	cmdPackage.UpdateConfig = updatePackageConfig
+}
+
+// Called when unable to parse the command line automatically and assumes an old launch
+func updatePackageConfig(c *model.CommandConfig, args []string) bool {
+	c.Index = model.PACKAGE
+	c.Package.ImportPath = args[0]
+	if len(args) > 1 {
+		c.Package.Mode = args[1]
+	}
+	return true
 }
 
 func packageApp(args []string) {

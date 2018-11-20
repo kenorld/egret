@@ -41,6 +41,14 @@ func LoadContext(confName string, confPaths []string) (*Context, error) {
 func (c *Context) SetSection(section string) {
 	c.section = "[" + section + "]"
 }
+func (c *Context) HasSection(section string) bool {
+	for _, v := range c.vipers {
+		if v.IsSet("[" + c.section + "]") {
+			return true
+		}
+	}
+	return false
+}
 
 func (c *Context) Get(key string) interface{} {
 	for _, v := range c.vipers {

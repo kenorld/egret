@@ -8,7 +8,7 @@ More can be found here:
 ## Install
 
 ```sh
-$ go get -u github.com/egret-contrib/middleware/i18n
+$ go get -u github.com/kenorld/egret-contrib/middleware/i18n
 ```
 
 ## Description
@@ -40,7 +40,7 @@ package main
 
 import (
 	"github.com/kenorld/egret"
-	"github.com/egret-contrib/middleware/i18n"
+	"github.com/kenorld/egret-contrib/middleware/i18n"
 )
 
 func main() {

@@ -9,6 +9,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/kenorld/egret/cmd/model"
+	"github.com/kenorld/egret/cmd/utils"
 )
 
 const (
@@ -35,7 +38,8 @@ For example:
 }
 
 func init() {
-	cmdNew.Run = newApp
+	cmdNew.RunWith = newApp
+	cmdNew.UpdateConfig = updateNewConfig
 }
 
 var (
@@ -54,12 +58,21 @@ var (
 	skeletonPath  string
 )
 
-func newApp(args []string) {
-	// check for proper args by count
-	if len(args) > 2 {
-		errorf("Too many arguments provided.\nRun 'egret help new' for usage.\n")
+// Called when unable to parse the command line automatically and assumes an old launch
+func updateNewConfig(c *model.CommandConfig, args []string) bool {
+	c.Index = model.NEW
+	if len(args) == 0 {
+		fmt.Fprintf(os.Stderr, cmdNew.Long)
+		return false
 	}
+	c.New.ImportPath = args[0]
+	if len(args) > 1 {
+		c.New.SkeletonPath = args[1]
+	}
+	return true
 
+}
+func newApp(c *model.CommandConfig) {
 	// checking and setting go paths
 	initGoPaths()
 
@@ -120,7 +133,7 @@ func initGoPaths() {
 	}
 
 	if len(srcRoot) == 0 {
-		logger.Fatal("Abort: could not create a Egret application outside of GOPATH.")
+		utils.Logger.Fatal("Abort: could not create a Egret application outside of GOPATH.")
 	}
 
 	// set go src path

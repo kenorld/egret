@@ -11,11 +11,18 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/imdario/mergo v0.3.6
+	github.com/inconshreveable/log15 v0.0.0-20180818164646-67afb5ed74ec // indirect
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kenorld/blackfriday v2.0.0+incompatible
 	github.com/kenorld/egret-core v0.2.0
 	github.com/klauspost/compress v1.4.1
+	github.com/mattn/go-colorable v0.0.9 // indirect
+	github.com/mattn/go-isatty v0.0.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.1
+	github.com/pkg/errors v0.8.0
+	github.com/revel/cmd v0.21.1
+	github.com/revel/config v0.21.0 // indirect
+	github.com/revel/log15 v2.11.20+incompatible // indirect
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
@@ -31,4 +38,6 @@ require (
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/ini.v1 v1.39.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
+	gopkg.in/stack.v0 v0.0.0-20141108040640-9b43fcefddd0 // indirect
 )

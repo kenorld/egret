@@ -26,6 +26,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kenorld/egret"
+	"github.com/kenorld/egret/cmd/utils"
 )
 
 var (
@@ -42,7 +43,6 @@ type Harness struct {
 	serverHost string
 	port       int
 	proxy      *httputil.ReverseProxy
-	logger     *zap.Logger
 }
 
 func renderError(w http.ResponseWriter, r *http.Request, err error) {
@@ -73,7 +73,7 @@ func (h *Harness) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Reverse proxy the request.
 	// (Need special code for websockets, courtesy of bradfitz)
 	if strings.EqualFold(r.Header.Get("Upgrade"), "websocket") {
-		proxyWebsocket(w, r, h.serverHost, h.logger)
+		proxyWebsocket(w, r, h.serverHost)
 	} else {
 		h.proxy.ServeHTTP(w, r)
 	}
@@ -81,7 +81,7 @@ func (h *Harness) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // NewHarness method returns a reverse proxy that forwards requests
 // to the given port.
-func NewHarness(logger *zap.Logger) *Harness {
+func NewHarness() *Harness {
 	// Get a template loader to render errors.
 	// Prefer the app's views/errors directory, and fall back to the stock error pages.
 	// egret.MainTemplateLoader = egret.NewTemplateLoader(
@@ -101,7 +101,7 @@ func NewHarness(logger *zap.Logger) *Harness {
 	}
 
 	if port == 0 {
-		port = getFreePort(logger)
+		port = getFreePort()
 	}
 
 	serverURL, _ := url.ParseRequestURI(fmt.Sprintf(scheme+"://%s:%d", addr, port))
@@ -110,7 +110,6 @@ func NewHarness(logger *zap.Logger) *Harness {
 		port:       port,
 		serverHost: serverURL.String()[len(scheme+"://"):],
 		proxy:      httputil.NewSingleHostReverseProxy(serverURL),
-		logger:     logger,
 	}
 
 	if egret.HttpTLSEnabled {
@@ -127,8 +126,8 @@ func (h *Harness) Refresh() (err *egret.Error) {
 		h.app.Kill()
 	}
 
-	h.logger.Info("Rebuilding...")
-	h.app, err = Build(h.logger)
+	utils.Logger.Info("Rebuilding...")
+	h.app, err = Build()
 	if err != nil {
 		return
 	}
@@ -171,7 +170,7 @@ func (h *Harness) Run() {
 
 	go func() {
 		addr := fmt.Sprintf("%s:%d", egret.HttpAddr, egret.HttpPort)
-		h.logger.Info("Listening on address: " + addr)
+		utils.Logger.Info("Listening on address: " + addr)
 
 		var err error
 		if egret.HttpTLSEnabled {
@@ -180,7 +179,7 @@ func (h *Harness) Run() {
 			err = http.ListenAndServe(addr, h)
 		}
 		if err != nil {
-			h.logger.Fatal("Failed to start reverse proxy", zap.Error(err))
+			utils.Logger.Fatal("Failed to start reverse proxy", zap.Error(err))
 		}
 	}()
 
@@ -195,23 +194,23 @@ func (h *Harness) Run() {
 }
 
 // Find an unused port
-func getFreePort(logger *zap.Logger) (port int) {
+func getFreePort() (port int) {
 	conn, err := net.Listen("tcp", ":0")
 	if err != nil {
-		logger.Fatal("Get free port error", zap.Error(err))
+		utils.Logger.Fatal("Get free port error", zap.Error(err))
 	}
 
 	port = conn.Addr().(*net.TCPAddr).Port
 	err = conn.Close()
 	if err != nil {
-		logger.Fatal("Get free port error", zap.Error(err))
+		utils.Logger.Fatal("Get free port error", zap.Error(err))
 	}
 	return port
 }
 
 // proxyWebsocket copies data between websocket client and server until one side
 // closes the connection.  (ReverseProxy doesn't work with websocket requests.)
-func proxyWebsocket(w http.ResponseWriter, r *http.Request, host string, logger *zap.Logger) {
+func proxyWebsocket(w http.ResponseWriter, r *http.Request, host string) {
 	var (
 		d   net.Conn
 		err error
@@ -226,7 +225,7 @@ func proxyWebsocket(w http.ResponseWriter, r *http.Request, host string, logger 
 	}
 	if err != nil {
 		http.Error(w, "Error contacting backend server.", 500)
-		logger.Error("Error dialing websocket backend", zap.String("host", host), zap.Error(err))
+		utils.Logger.Error("Error dialing websocket backend", zap.String("host", host), zap.Error(err))
 		return
 	}
 	hj, ok := w.(http.Hijacker)
@@ -236,7 +235,7 @@ func proxyWebsocket(w http.ResponseWriter, r *http.Request, host string, logger 
 	}
 	nc, _, err := hj.Hijack()
 	if err != nil {
-		logger.Error("Hijack error", zap.Error(err))
+		utils.Logger.Error("Hijack error", zap.Error(err))
 		return
 	}
 	defer nc.Close()
@@ -244,7 +243,7 @@ func proxyWebsocket(w http.ResponseWriter, r *http.Request, host string, logger 
 
 	err = r.Write(d)
 	if err != nil {
-		logger.Error("Error copying request to target", zap.Error(err))
+		utils.Logger.Error("Error copying request to target", zap.Error(err))
 		return
 	}
 

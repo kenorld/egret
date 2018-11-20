@@ -5,7 +5,7 @@ HTTP Basic authentication (BA) implementation is the simplest technique for enfo
 ## Install
 
 ```sh
-$ go get -u github.com/egret-contrib/middleware/basicauth
+$ go get -u github.com/kenorld/egret-contrib/middleware/basicauth
 ```
 
 ## How to use

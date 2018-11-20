@@ -1,10 +1,15 @@
 package main
 
 import (
+	"go/build"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/kenorld/egret"
 	"github.com/kenorld/egret/cmd/harness"
+	"github.com/kenorld/egret/cmd/model"
+	"github.com/kenorld/egret/cmd/utils"
 	"go.uber.org/zap"
 )
 
@@ -30,6 +35,80 @@ You can set a port as an optional third parameter.  For example:
 
 func init() {
 	cmdRun.Run = runApp
+	cmdRun.RunWith = runApp
+	cmdRun.UpdateConfig = updateRunConfig
+}
+
+func updateRunConfig(c *model.CommandConfig, args []string) bool {
+	convertPort := func(value string) int {
+		if value != "" {
+			port, err := strconv.Atoi(value)
+			if err != nil {
+				utils.Logger.Fatalf("Failed to parse port as integer: %s", c.Run.Port)
+			}
+			return port
+		}
+		return 0
+	}
+	switch len(args) {
+	case 3:
+		// Possible combinations
+		// revel run [import-path] [run-mode] [port]
+		c.Run.ImportPath = args[0]
+		c.Run.Mode = args[1]
+		c.Run.Port = convertPort(args[2])
+	case 2:
+		// Possible combinations
+		// 1. revel run [import-path] [run-mode]
+		// 2. revel run [import-path] [port]
+		// 3. revel run [run-mode] [port]
+
+		// Check to see if the import path evaluates out to something that may be on a gopath
+		if runIsImportPath(args[0]) {
+			// 1st arg is the import path
+			c.Run.ImportPath = args[0]
+
+			if _, err := strconv.Atoi(args[1]); err == nil {
+				// 2nd arg is the port number
+				c.Run.Port = convertPort(args[1])
+			} else {
+				// 2nd arg is the run mode
+				c.Run.Mode = args[1]
+			}
+		} else {
+			// 1st arg is the run mode
+			c.Run.Mode = args[0]
+			c.Run.Port = convertPort(args[1])
+		}
+	case 1:
+		// Possible combinations
+		// 1. revel run [import-path]
+		// 2. revel run [port]
+		// 3. revel run [run-mode]
+		if runIsImportPath(args[0]) {
+			// 1st arg is the import path
+			c.Run.ImportPath = args[0]
+		} else if _, err := strconv.Atoi(args[0]); err == nil {
+			// 1st arg is the port number
+			c.Run.Port = convertPort(args[0])
+		} else {
+			// 1st arg is the run mode
+			c.Run.Mode = args[0]
+		}
+	case 0:
+		// Attempt to set the import path to the current working director.
+		c.Run.ImportPath, _ = os.Getwd()
+	}
+	c.Index = model.RUN
+	return true
+}
+
+// Returns true if this is an absolute path or a relative gopath
+func runIsImportPath(pathToCheck string) bool {
+	if _, err := build.Import(pathToCheck, "", build.FindOnly); err == nil {
+		return true
+	}
+	return filepath.IsAbs(pathToCheck)
 }
 
 func runApp(args []string) {
@@ -56,7 +135,7 @@ func runApp(args []string) {
 		}
 	}
 
-	logger.Info("Running...",
+	utils.Logger.Info("Running...",
 		zap.String("AppName", egret.AppName),
 		zap.String("ImportPath", egret.ImportPath),
 		zap.String("Mode", mode),
@@ -65,14 +144,14 @@ func runApp(args []string) {
 
 	// If the app is run in "watched" mode, use the harness to run it.
 	if egret.Config.GetBoolDefault("watch.enabled", true) && egret.Config.GetBoolDefault("watch.code", true) {
-		logger.Info("Running in watched mode.")
+		utils.Logger.Info("Running in watched mode.")
 		egret.HttpPort = port
-		harness.NewHarness(logger).Run() // Never returns.
+		harness.NewHarness().Run() // Never returns.
 	}
 
 	// Else, just build and run the app.
-	logger.Info("Running in live build mode.")
-	app, err := harness.Build(logger)
+	utils.Logger.Info("Running in live build mode.")
+	app, err := harness.Build()
 	if err != nil {
 		errorf("Failed to build app: %s", err)
 	}

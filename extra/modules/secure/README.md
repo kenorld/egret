@@ -11,7 +11,7 @@ Secure is an HTTP middleware for Go that facilitates some quick security wins.
 ## Install
 
 ```sh
-$ go get -u github.com/egret-contrib/middleware/secure
+$ go get -u github.com/kenorld/egret-contrib/middleware/secure
 ```
 
 ## How to use
@@ -21,7 +21,7 @@ package main
 
 import (
 	"github.com/kenorld/egret"
-	"github.com/egret-contrib/middleware/secure"
+	"github.com/kenorld/egret-contrib/middleware/secure"
 )
 
 func main() {

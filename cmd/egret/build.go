@@ -8,6 +8,7 @@ import (
 
 	"github.com/kenorld/egret"
 	"github.com/kenorld/egret/cmd/harness"
+	"github.com/kenorld/egret/cmd/model"
 )
 
 var cmdBuild = &Command{
@@ -31,19 +32,35 @@ For example:
 }
 
 func init() {
-	cmdBuild.Run = buildApp
+	cmdBuild.RunWith = buildApp
+	cmdBuild.UpdateConfig = updateBuildConfig
 }
 
-func buildApp(args []string) {
+// The update config updates the configuration command so that it can run
+func updateBuildConfig(c *model.CommandConfig, args []string) bool {
+	c.Index = model.BUILD
+	// If arguments were passed in then there must be two
 	if len(args) < 2 {
 		fmt.Fprintf(os.Stderr, "%s\n%s", cmdBuild.UsageLine, cmdBuild.Long)
-		return
+		return false
 	}
 
-	appImportPath, destPath, mode := args[0], args[1], "dev"
-	if len(args) >= 3 {
-		mode = args[2]
+	c.Build.ImportPath = args[0]
+	c.Build.TargetPath = args[1]
+	if len(args) > 2 {
+		c.Build.Mode = args[2]
 	}
+	return true
+}
+func buildApp(c *model.CommandConfig) {
+	appImportPath, destPath, mode := c.ImportPath, c.Build.TargetPath, "dev"
+	if len(c.Build.Mode) > 0 {
+		mode = c.Build.Mode
+	}
+
+	c.Build.TargetPath, _ = filepath.Abs(destPath)
+	c.Build.Mode = mode
+	c.Build.ImportPath = appImportPath
 
 	if !egret.Initialized {
 		egret.Init(mode, appImportPath, "")
@@ -60,7 +77,7 @@ func buildApp(args []string) {
 	mustCopyDir(path.Join(srcPath, filepath.FromSlash(appImportPath)), egret.BasePath, true, nil)
 	os.MkdirAll(destPath, 0777)
 
-	app, eerr := harness.Build(logger)
+	app, eerr := harness.Build()
 	panicOnError(eerr, "Failed to build")
 
 	// Included are:

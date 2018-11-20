@@ -18,6 +18,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/kenorld/egret"
+	"github.com/kenorld/egret/cmd/utils"
 )
 
 var importErrorPattern = regexp.MustCompile("cannot find package \"([^\"]+)\"")
@@ -50,7 +51,7 @@ func getModuleNameFromModfile(fpath string) (string, error) {
 // 2. Run the appropriate "go build" command.
 // Requires that egret.Init has been called previously.
 // Returns the path to the built binary, and an error if there was a problem building it.
-func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *egret.Error) {
+func Build(buildFlags ...string) (app *App, compileError *egret.Error) {
 	if compileError != nil {
 		return nil, compileError
 	}
@@ -62,12 +63,12 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 	// It relies on the user having "go" installed.
 	goPath, err := exec.LookPath("go")
 	if err != nil {
-		logger.Fatal("Go executable not found in PATH")
+		utils.Logger.Fatal("Go executable not found in PATH")
 	}
 
 	// pkg, err := build.Default.Import(egret.ImportPath, "", build.FindOnly)
 	// if err != nil {
-	// 	logger.Warn("Failure importing", zap.String("import_path", egret.ImportPath))
+	// 	utils.Logger.Warn("Failure importing", zap.String("import_path", egret.ImportPath))
 	// }
 	// // Binary path is a combination of $GOBIN/egret.d directory, app's import path and its name.
 	// binName := filepath.Join(pkg.BinDir, "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
@@ -76,15 +77,15 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 	if egret.IsGoModule {
 		if modName, err := egret.GetModuleName(); err == nil {
 			binName = filepath.Join(egret.BasePath, "bin", ".tmp", filepath.Base(modName))
-			logger.Info("App is build in go modules mode")
+			utils.Logger.Info("App is build in go modules mode")
 		} else {
-			logger.Fatal("Failed to get module name")
+			utils.Logger.Fatal("Failed to get module name")
 		}
 	} else {
 		for _, gopath := range filepath.SplitList(build.Default.GOPATH) {
 			if strings.HasPrefix(egret.BasePath, gopath) {
 				binName = filepath.Join(gopath, "bin", "egret.d", egret.ImportPath, filepath.Base(egret.BasePath))
-				logger.Info("App is build in go path mode")
+				utils.Logger.Info("App is build in go path mode")
 				break
 			}
 		}
@@ -101,7 +102,7 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 
 	gotten := make(map[string]struct{})
 	for {
-		appVersion := getAppVersion(logger)
+		appVersion := getAppVersion()
 		buildTime := time.Now().UTC().Format(time.RFC3339)
 		versionLinkerFlags := fmt.Sprintf("-X %s/app.AppVersion=%s -X %s/app.BuildTime=%s",
 			egret.ImportPath, appVersion, egret.ImportPath, buildTime)
@@ -120,40 +121,40 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 		flags = append(flags, path.Join(egret.ImportPath))
 
 		buildCmd := exec.Command(goPath, flags...)
-		logger.Info("Exec command", zap.Strings("args", buildCmd.Args))
+		utils.Logger.Info("Exec command", zap.Strings("args", buildCmd.Args))
 		output, err := buildCmd.CombinedOutput()
 
 		// If the build succeeded, we're done.
 		if err == nil {
-			return NewApp(binName, logger), nil
+			return NewApp(binName), nil
 		}
-		logger.Error(string(output))
+		utils.Logger.Error(string(output))
 
 		// See if it was an import error that we can go get.
 		matches := importErrorPattern.FindStringSubmatch(string(output))
 		if matches == nil {
-			return nil, newCompileError(output, logger)
+			return nil, newCompileError(output)
 		}
 
 		// Ensure we haven't already tried to go get it.
 		pkgName := matches[1]
 		if _, alreadyTried := gotten[pkgName]; alreadyTried {
-			return nil, newCompileError(output, logger)
+			return nil, newCompileError(output)
 		}
 		gotten[pkgName] = struct{}{}
 
 		// Execute "go get <pkg>"
 		getCmd := exec.Command(goPath, "get", pkgName)
-		logger.Info("Exec command", zap.Strings("args", getCmd.Args))
+		utils.Logger.Info("Exec command", zap.Strings("args", getCmd.Args))
 		getOutput, err := getCmd.CombinedOutput()
 		if err != nil {
-			logger.Error(string(getOutput))
-			return nil, newCompileError(output, logger)
+			utils.Logger.Error(string(getOutput))
+			return nil, newCompileError(output)
 		}
 
 		// Success getting the import, attempt to build again.
 	}
-	logger.Fatal("Not reachable")
+	utils.Logger.Fatal("Not reachable")
 	return nil, nil
 }
 
@@ -163,7 +164,7 @@ func Build(logger *zap.Logger, buildFlags ...string) (app *App, compileError *eg
 //   variable
 // - Read the output of "git describe" if the source is in a git repository
 // If no version can be determined, an empty string is returned.
-func getAppVersion(logger *zap.Logger) string {
+func getAppVersion() string {
 	if version := os.Getenv("APP_VERSION"); version != "" {
 		return version
 	}
@@ -177,11 +178,11 @@ func getAppVersion(logger *zap.Logger) string {
 			return ""
 		}
 		gitCmd := exec.Command(gitPath, "--git-dir="+gitDir, "describe", "--always", "--dirty")
-		logger.Info("Exec command", zap.Strings("args", gitCmd.Args))
+		utils.Logger.Info("Exec command", zap.Strings("args", gitCmd.Args))
 		output, err := gitCmd.Output()
 
 		if err != nil {
-			logger.Warn("Cannot determine git repository version", zap.Error(err))
+			utils.Logger.Warn("Cannot determine git repository version", zap.Error(err))
 			return ""
 		}
 
@@ -202,14 +203,14 @@ func containsValue(m map[string]string, val string) bool {
 
 // Parse the output of the "go build" command.
 // Return a detailed Error.
-func newCompileError(output []byte, logger *zap.Logger) *egret.Error {
+func newCompileError(output []byte) *egret.Error {
 	errorMatch := regexp.MustCompile(`(?m)^([^:#]+):(\d+):(\d+:)? (.*)$`).
 		FindSubmatch(output)
 	if errorMatch == nil {
 		errorMatch = regexp.MustCompile(`(?m)^(.*?)\:(\d+)\:\s(.*?)$`).FindSubmatch(output)
 
 		if errorMatch == nil {
-			logger.Error("Failed to parse build errors", zap.String("error", string(output)))
+			utils.Logger.Error("Failed to parse build errors", zap.String("error", string(output)))
 			return &egret.Error{
 				Status:     500,
 				Name:       "compilation_error",
@@ -220,7 +221,7 @@ func newCompileError(output []byte, logger *zap.Logger) *egret.Error {
 		}
 
 		errorMatch = append(errorMatch, errorMatch[3])
-		logger.Error("Build failed", zap.String("error", string(output)))
+		utils.Logger.Error("Build failed", zap.String("error", string(output)))
 	}
 
 	// Read the source for the offending file.
@@ -248,7 +249,7 @@ func newCompileError(output []byte, logger *zap.Logger) *egret.Error {
 	fileStr, err := egret.ReadLines(absFilename)
 	if err != nil {
 		compileError.MetaError = absFilename + ": " + err.Error()
-		logger.Error("Build compile error", zap.String("file", absFilename), zap.Error(err))
+		utils.Logger.Error("Build compile error", zap.String("file", absFilename), zap.Error(err))
 		return compileError
 	}
 
