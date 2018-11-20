@@ -219,9 +219,9 @@ var (
 // Params:
 //   mode - the run mode, which determines which app.yaml settings are used.
 //   importPath - the Go import path of the application.
-//   srcPath - the path to the source directory, containing Egret and the app.
+//   appSrcPath - the path to current app source directory.
 //     If not specified (""), then a functioning Go installation is required.
-func Init(mode, importPath, srcPath string) {
+func Init(mode, importPath, appSrcPath string) {
 	GoPaths = filepath.SplitList(build.Default.GOPATH)
 	if mode == "prod" {
 		if logger, err := zap.NewProduction(); err == nil {
@@ -243,24 +243,24 @@ func Init(mode, importPath, srcPath string) {
 	IsGoModule = IsGoModuleMode()
 
 	// If the SourcePath is not specified, find it using build.Import.
-	if srcPath == "" {
-		EgretPath, srcPath = findSrcPaths(ImportPath)
+	if appSrcPath == "" {
+		EgretPath, appSrcPath = findSrcPaths(ImportPath)
 	} else {
 		// If the SourcePath was specified, assume both Egret and the app are within it.
-		srcPath = path.Clean(srcPath)
-		EgretPath = filepath.Join(srcPath, filepath.FromSlash(EgretImportPath))
+		appSrcPath = path.Clean(appSrcPath)
+		EgretPath = filepath.Join(appSrcPath, filepath.FromSlash(EgretImportPath))
 		packaged = true
 	}
 	if IsGoModule {
 		if ImportPath != "" && ImportPath[0] != '.' {
-			BasePath = srcPath
+			BasePath = appSrcPath
 		} else {
-			BasePath = filepath.Join(srcPath, ImportPath)
+			BasePath = filepath.Join(appSrcPath, ImportPath)
 		}
 	} else {
-		BasePath = filepath.Join(srcPath, filepath.FromSlash(importPath))
+		BasePath = appSrcPath
 	}
-	SourcePath = srcPath
+	SourcePath = appSrcPath
 
 	CodePaths = []string{BasePath}
 
@@ -458,6 +458,11 @@ func IsGoModuleMode() bool {
 	if ImportPath == "" || ImportPath[0] == '.' {
 		return true
 	}
+	for _, gopath := range GoPaths {
+		if _, err := os.Stat(filepath.Join(gopath, "src", ImportPath)); err == nil {
+			return false
+		}
+	}
 	modName, _ := GetModuleName()
 	return modName != "" && modName == ImportPath
 }
@@ -502,7 +507,7 @@ func findSrcPaths(importPath string) (egretSourcePath, appSourcePath string) {
 
 	appPkg, err := build.Import(importPath, srcDir, build.FindOnly)
 	if err != nil {
-		Logger.Error("Failed to import", zap.String("import_path", importPath), zap.Error(err))
+		Logger.Error("Failed to import", zap.String("importPath", importPath), zap.String("srcDir", srcDir), zap.Bool("IsGoModule", IsGoModule), zap.Error(err))
 	}
 	egretPkg, err := build.Import(EgretImportPath, appPkg.Dir, build.FindOnly)
 	if err != nil {
@@ -526,8 +531,8 @@ func loadModules() {
 		modulePath, err := ResolveImportPath(moduleImportPath)
 		if err != nil {
 			log.Fatalln("Failed to load module. Import of", moduleImportPath, "failed:", err)
+			addModule(key[len("module."):], moduleImportPath, modulePath)
 		}
-		addModule(key[len("module."):], moduleImportPath, modulePath)
 	}
 }
 
