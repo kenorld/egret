@@ -111,15 +111,9 @@ func runIsImportPath(pathToCheck string) bool {
 	return filepath.IsAbs(pathToCheck)
 }
 
-func runApp(args []string) {
-	if len(args) == 0 {
-		args[0] = ""
-	}
-
-	// Determine the run mode.
-	mode := "dev"
-	if len(args) >= 2 {
-		mode = args[1]
+func runApp(c *model.CommandConfig) {
+	if c.Run.Mode == "" {
+		c.Run.Mode = "dev"
 	}
 
 	// Find and parse app.yaml

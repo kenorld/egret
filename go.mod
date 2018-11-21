@@ -12,6 +12,7 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/imdario/mergo v0.3.6
 	github.com/inconshreveable/log15 v0.0.0-20180818164646-67afb5ed74ec // indirect
+	github.com/jessevdk/go-flags v1.4.0
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kenorld/blackfriday v2.0.0+incompatible
 	github.com/kenorld/egret-core v0.2.0

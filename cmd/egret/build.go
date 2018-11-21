@@ -52,7 +52,7 @@ func updateBuildConfig(c *model.CommandConfig, args []string) bool {
 	}
 	return true
 }
-func buildApp(c *model.CommandConfig) {
+func buildApp(c *model.CommandConfig) error {
 	appImportPath, destPath, mode := c.ImportPath, c.Build.TargetPath, "dev"
 	if len(c.Build.Mode) > 0 {
 		mode = c.Build.Mode
@@ -77,8 +77,10 @@ func buildApp(c *model.CommandConfig) {
 	mustCopyDir(path.Join(srcPath, filepath.FromSlash(appImportPath)), egret.BasePath, true, nil)
 	os.MkdirAll(destPath, 0777)
 
-	app, eerr := harness.Build()
-	panicOnError(eerr, "Failed to build")
+	app, err := harness.Build()
+	if err != nil {
+		return err
+	}
 
 	// Included are:
 	// - run scripts
@@ -111,4 +113,5 @@ func buildApp(c *model.CommandConfig) {
 		filepath.Join(destPath, "run.bat"),
 		filepath.Join(egret.EgretPath, "cmd", "egret", "package_run.bat.template"),
 		tmplData)
+	return nil
 }

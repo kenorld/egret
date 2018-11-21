@@ -66,7 +66,7 @@ func (v *VersionCommand) UpdateConfig(c *model.CommandConfig, args []string) boo
 
 // Displays the version of go and Egret
 func (v *VersionCommand) RunWith(c *model.CommandConfig) (err error) {
-	utils.Logger.Info("Requesting version information", "config", c)
+	utils.Logger.Info("Requesting version information", zap.Any("config", c))
 	v.Command = c
 
 	// Update the versions with the local values

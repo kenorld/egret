@@ -44,7 +44,7 @@ or one of UserTest's methods:
 }
 
 func init() {
-	cmdTest.Run = testApp
+	cmdTest.RunWith = testApp
 	cmdTest.UpdateConfig = updateTestConfig
 }
 
@@ -79,24 +79,6 @@ func testApp(args []string) {
 
 	// Find and parse app.yaml
 	egret.Init(mode, args[0], "")
-
-	// Ensure that the testrunner is loaded in this mode.
-	// 	testRunnerFound := false
-	// 	for _, module := range egret.Modules {
-	// 		if module.ImportPath == egret.Config.StringDefault("module.testrunner", "github.com/kenorld/egret/extra/modules/testrunner") {
-	// 			testRunnerFound = true
-	// 			break
-	// 		}
-	// 	}
-	// 	if !testRunnerFound {
-	// 		errorf(`Error: The testrunner module is not running.
-
-	// You can add it to a run mode configuration with the following line:
-
-	// 	module.testrunner = github.com/kenorld/egret/extra/modules/testrunner
-
-	// `)
-	// 	}
 
 	// Create a directory to hold the test result files.
 	resultPath := path.Join(egret.BasePath, "test-results")

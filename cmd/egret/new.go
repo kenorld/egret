@@ -72,15 +72,15 @@ func updateNewConfig(c *model.CommandConfig, args []string) bool {
 	return true
 
 }
-func newApp(c *model.CommandConfig) {
+func newApp(c *model.CommandConfig) error {
 	// checking and setting go paths
 	initGoPaths()
 
 	// checking and setting application
-	setApplicationPath(args)
+	setApplicationPath(c)
 
 	// checking and setting skeleton
-	setSkeletonPath(args)
+	setSkeletonPath(c)
 
 	// copy files to new app directory
 	copyNewAppFiles()
@@ -88,6 +88,7 @@ func newApp(c *model.CommandConfig) {
 	// goodbye world
 	fmt.Fprintln(os.Stdout, "Your application is ready:\n  ", appPath)
 	fmt.Fprintln(os.Stdout, "\nYou can run it with:\n   egret run", importPath)
+	return nil
 }
 
 const alphaNumeric = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
@@ -140,9 +141,9 @@ func initGoPaths() {
 	srcRoot = filepath.Join(srcRoot, "src")
 }
 
-func setApplicationPath(args []string) {
+func setApplicationPath(c *model.CommandConfig) {
 	var err error
-	importPath = args[0]
+	importPath = c.ImportPath
 
 	// egret/egret#1014 validate relative path, we cannot use built-in functions
 	// since Go import path is valid relative path too.
@@ -177,10 +178,10 @@ func setApplicationPath(args []string) {
 	}
 }
 
-func setSkeletonPath(args []string) {
+func setSkeletonPath(c *model.CommandConfig) {
 	var err error
-	if len(args) == 2 { // user specified
-		skeletonName := args[1]
+	if c.New.SkeletonPath != "" { // user specified
+		skeletonName := c.New.SkeletonPath
 		_, err = build.Import(skeletonName, "", build.FindOnly)
 		if err != nil {
 			// Execute "go get <pkg>"

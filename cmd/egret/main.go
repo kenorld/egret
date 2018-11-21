@@ -2,18 +2,20 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
-	"io"
 	"math/rand"
 	"os"
 	"runtime"
 	"strings"
-	"text/template"
 	"time"
 
 	"github.com/agtorre/gocolorize"
+	flags "github.com/jessevdk/go-flags"
 	"github.com/kenorld/egret/cmd/model"
+	"github.com/kenorld/egret/cmd/utils"
+	"go.uber.org/zap"
 )
 
 // Command structure cribbed from the genius organization of the "go" command.
@@ -32,7 +34,7 @@ func (cmd *Command) Name() string {
 	return name
 }
 
-var commands = []*Command{
+var Commands = []*Command{
 	cmdNew,
 	cmdRun,
 	cmdBuild,
@@ -45,45 +47,86 @@ func main() {
 	if runtime.GOOS == "windows" {
 		gocolorize.SetPlain(true)
 	}
-	fmt.Fprintf(os.Stdout, gocolorize.NewColor("blue").Paint(header))
-	flag.Usage = func() { usage(1) }
-	flag.Parse()
-	args := flag.Args()
+	c := &model.CommandConfig{}
+	wd, _ := os.Getwd()
 
-	if len(args) < 1 || args[0] == "help" {
-		if len(args) == 1 {
-			usage(0)
-		}
-		if len(args) > 1 {
-			for _, cmd := range commands {
-				if cmd.Name() == args[1] {
-					tmpl(os.Stdout, helpTemplate, cmd)
-					return
-				}
-			}
-		}
-		usage(2)
+	fmt.Fprintf(os.Stdout, gocolorize.NewColor("blue").Paint(header))
+	parser := flags.NewParser(c, flags.HelpFlag|flags.PassDoubleDash)
+	if len(os.Args) < 2 {
+		parser.WriteHelp(os.Stdout)
+		os.Exit(1)
 	}
 
-	// Commands use panic to abort execution when something goes wrong.
-	// Panics are logged at the point of error.  Ignore those.
-	// defer func() {
-	// 	if err := recover(); err != nil {
-	// 		if _, ok := err.(LoggedError); !ok {
-	// 			// This panic was not expected / logged.
-	// 			panic(err)
-	// 		}
-	// 		os.Exit(1)
-	// 	}
-	// }()
-	for _, cmd := range commands {
-		if cmd.Name() == args[0] {
-			cmd.RunWith(args[1:])
+	if err := ParseArgs(c, parser, os.Args[1:]); err != nil {
+		fmt.Fprint(os.Stderr, err.Error()+"\n")
+		os.Exit(1)
+	}
+
+	if err := c.UpdateImportPath(); err != nil {
+		utils.Logger.Error(err.Error())
+		parser.WriteHelp(os.Stdout)
+		os.Exit(1)
+	}
+
+	command := Commands[c.Index]
+	println("Revel executing:", command.Short)
+
+	// Setting go paths
+	c.InitGoPaths()
+
+	// Setup package resolver
+	c.InitPackageResolver()
+
+	if err := command.RunWith(c); err != nil {
+		utils.Logger.Error("Unable to execute", zap.Error(err))
+		os.Exit(1)
+	}
+}
+
+// Parse the arguments passed into the model.CommandConfig
+func ParseArgs(c *model.CommandConfig, parser *flags.Parser, args []string) (err error) {
+	var extraArgs []string
+	if ini := flag.String("ini", "none", ""); *ini != "none" {
+		if err = flags.NewIniParser(parser).ParseFile(*ini); err != nil {
 			return
 		}
+	} else {
+		if extraArgs, err = parser.ParseArgs(args); err != nil {
+			return
+		} else {
+			switch parser.Active.Name {
+			case "new":
+				c.Index = model.NEW
+			case "run":
+				c.Index = model.RUN
+			case "build":
+				c.Index = model.BUILD
+			case "package":
+				c.Index = model.PACKAGE
+			case "clean":
+				c.Index = model.CLEAN
+			case "test":
+				c.Index = model.TEST
+			case "version":
+				c.Index = model.VERSION
+			}
+		}
 	}
 
-	errorf("unknown command %q\nRun 'egret help' for usage.\n", args[0])
+	if len(extraArgs) > 0 {
+		utils.Logger.Info("Found additional arguements, setting them")
+		if !Commands[c.Index].UpdateConfig(c, extraArgs) {
+			buffer := &bytes.Buffer{}
+			parser.WriteHelp(buffer)
+			err = fmt.Errorf("Invalid command line arguements %v\n%s", extraArgs, buffer.String())
+		}
+	}
+
+	return
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
 }
 
 func errorf(format string, args ...interface{}) {
@@ -107,33 +150,3 @@ const header = `
 		
 		                                             
 `
-
-const usageTemplate = `usage: egret command [arguments]
-
-The commands are:
-{{range .}}
-    {{.Name | printf "%-11s"}} {{.Short}}{{end}}
-
-Use "egret help [command]" for more information.
-`
-
-var helpTemplate = `usage: egret {{.UsageLine}}
-{{.Long}}
-`
-
-func usage(exitCode int) {
-	tmpl(os.Stderr, usageTemplate, commands)
-	os.Exit(exitCode)
-}
-
-func tmpl(w io.Writer, text string, data interface{}) {
-	t := template.New("top")
-	template.Must(t.Parse(text))
-	if err := t.Execute(w, data); err != nil {
-		panic(err)
-	}
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
