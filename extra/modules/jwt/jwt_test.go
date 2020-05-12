@@ -1,11 +1,11 @@
 package jwt
 
-
 import (
 	"testing"
+
 	"github.com/dgrijalva/jwt-go"
-	jwtmiddleware "github.com/egret-contrib/middleware/jwt"
 	"github.com/kenorld/egret"
+	jwtmiddleware "github.com/kenorld/egret/extra/modules/jwt"
 )
 
 type Response struct {

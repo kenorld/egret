@@ -11,7 +11,7 @@ Middleware for [JSON Web Tokens](https://jwt.io/).
 ## Install
 
 ```sh
-$ go get -u github.com/egret-contrib/middleware/jwt
+$ go get -u github.com/kenorld/egret/extra/modules/jwt
 ```
 
 ## How to use

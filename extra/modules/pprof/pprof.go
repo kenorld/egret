@@ -4,7 +4,7 @@ import (
 	"net/http/pprof"
 	"strings"
 
-	"github.com/kataras/egret"
+	"github.com/kenorld/egret"
 )
 
 // New returns the pprof (profile, debug usage) Handler/ middleware

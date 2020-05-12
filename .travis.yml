@@ -13,7 +13,6 @@ os:
 sudo: false
 
 services:
-  # github.com/kenorld/egret/cache
   - memcache
   - redis-server
 

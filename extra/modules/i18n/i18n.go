@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Unknwon/i18n"
-	"github.com/kataras/egret"
+	"github.com/kenorld/egret"
 )
 
 type i18nMiddleware struct {
