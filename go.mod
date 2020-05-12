@@ -7,13 +7,16 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/facebookgo/ensure v0.0.0-20160127193407-b4ab57deab51
 	github.com/facebookgo/freeport v0.0.0-20150612182905-d4adf43b75b9
+	github.com/facebookgo/subset v0.0.0-20200203212716-c811ad88dec4 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible
+	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/imdario/mergo v0.3.6
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
 	github.com/kenorld/egret-core v0.2.0
 	github.com/klauspost/compress v1.4.1
 	github.com/klauspost/cpuid v1.2.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect

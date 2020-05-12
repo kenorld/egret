@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	egret "github.com/kenorld/egret-core"
+	egret "github.com/kenorld/egret/core"
 )
 
 // These tests require redis server running on localhost:6379 (the default)
