@@ -36,9 +36,6 @@ const (
 	ContentText = "text/plain"
 	// ContentXML header value for XML data.
 	ContentXML = "text/xml"
-
-	// contentMarkdown custom key/content type, the real is the text/html
-	ContentMarkdown = "text/markdown"
 )
 
 type Request struct {

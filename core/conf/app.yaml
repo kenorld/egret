@@ -82,10 +82,6 @@ template:
     root: "/"
     layout: ""
 
-  markdown:
-    enabled: true
-    extensions: ".md,.markdown"
-
 render:
   # Determines whether the template rendering should use chunked encoding.
   # Chunked encoding can decrease the time to first byte on the client side by

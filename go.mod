@@ -15,7 +15,6 @@ require (
 	github.com/imdario/mergo v0.3.9
 	github.com/klauspost/compress v1.10.5
 	github.com/microcosm-cc/bluemonday v1.0.2
-	github.com/russross/blackfriday v1.5.2
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/viper v1.7.0
 	github.com/stoewer/go-strcase v1.2.0

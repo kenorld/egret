@@ -1,7 +1,7 @@
 // Package serializer helps GoLang Developers to serialize any custom type to []byte or string.
 // Your custom serializers are finally, organised.
 //
-// Built'n supported serializers: JSON, JSONP, XML, Markdown, Text, Binary Data.
+// Built'n supported serializers: JSON, JSONP, XML,, Text, Binary Data.
 //
 // This package is already used by Iris & Q Web Frameworks.
 package serializer
@@ -15,7 +15,6 @@ import (
 	"github.com/kenorld/egret/core/serializer/data"
 	"github.com/kenorld/egret/core/serializer/json"
 	"github.com/kenorld/egret/core/serializer/jsonp"
-	"github.com/kenorld/egret/core/serializer/markdown"
 	"github.com/kenorld/egret/core/serializer/text"
 	"github.com/kenorld/egret/core/serializer/xml"
 )
@@ -77,10 +76,10 @@ var (
 
 var (
 	once               sync.Once
-	defaultManagerKeys = [...]string{json.ContentType, jsonp.ContentType, xml.ContentType, markdown.ContentType, text.ContentType, data.ContentType}
+	defaultManagerKeys = [...]string{json.ContentType, jsonp.ContentType, xml.ContentType, text.ContentType, data.ContentType}
 )
 
-// RegisterDefaults register defaults serializer for each of the default serializer keys (data,json,jsonp,markdown,text,xml)
+// RegisterDefaults register defaults serializer for each of the default serializer keys (data,json,jsonp,text,xml)
 func RegisterDefaults(serializers *Manager) {
 	for _, ctype := range defaultManagerKeys {
 
@@ -93,8 +92,6 @@ func RegisterDefaults(serializers *Manager) {
 				serializers.For(ctype, jsonp.New())
 			case xml.ContentType:
 				serializers.For(ctype, xml.New())
-			case markdown.ContentType:
-				serializers.For(ctype, markdown.New())
 			case text.ContentType:
 				serializers.For(ctype, text.New())
 			case data.ContentType:

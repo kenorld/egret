@@ -3,7 +3,6 @@ package egret
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -360,20 +359,6 @@ func (c *Context) RenderJSON(o interface{}) *Context {
 	c.RenderArgs["serialize.format"] = ContentJSON
 	c.RenderArgs["Entity"] = o
 	return c
-}
-
-func (c *Context) RenderMarkdown(content string) *Context {
-	c.RenderArgs["serialize.format"] = "text/markdown"
-	c.RenderArgs["Entity"] = content
-	return c
-}
-
-func (c *Context) RenderMarkdownFile(path string) *Context {
-	content, err := ioutil.ReadFile(GetAbsPath(path))
-	if err != nil {
-		return c.NotFound("Markdown file is not exist!")
-	}
-	return c.RenderMarkdown(string(content))
 }
 
 // Renders a JSONP result using encoding/json.Marshal
