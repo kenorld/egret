@@ -1,8 +1,8 @@
 package markdown
 
 import (
-	"github.com/kenorld/blackfriday"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday"
 )
 
 const (

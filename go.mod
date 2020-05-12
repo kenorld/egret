@@ -11,7 +11,6 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e // indirect
 	github.com/imdario/mergo v0.3.6
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
-	github.com/kenorld/blackfriday v2.0.0+incompatible
 	github.com/kenorld/egret-core v0.2.0
 	github.com/klauspost/compress v1.4.1
 	github.com/microcosm-cc/bluemonday v1.0.1
@@ -27,7 +26,7 @@ require (
 	golang.org/x/crypto v0.0.0-20181112202954-3d3f9f413869
 	golang.org/x/net v0.0.0-20190206173232-65e2d4e15006
 	golang.org/x/sys v0.0.0-20181116161606-93218def8b18 // indirect
-	gopkg.in//fsnotify/fsnotify.v1 v1.4.9
+	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/ini.v1 v1.39.0 // indirect
 	gopkg.in/mgo.v2 v2.0.0-20180705113604-9856a29383ce
 )
