@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Unknwon/i18n"
 	"github.com/kenorld/egret"
+	"github.com/unknwon/i18n"
 )
 
 type i18nMiddleware struct {

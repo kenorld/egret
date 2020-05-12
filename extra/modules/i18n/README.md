@@ -3,7 +3,7 @@
 This folder contains a middleware for internationalization uses a third-party package named i81n.
 
 More can be found here:
-[https://github.com/Unknwon/i18n](https://github.com/Unknwon/i18n)
+[https://github.com/unknwon/i18n](https://github.com/unknwon/i18n)
 
 ## Install
 
