@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/gomodule/redigo/redis"
-	egret "github.com/kenorld/egret-core"
+	egret "github.com/kenorld/egret/core"
 )
 
 // Wraps the Redis client to meet the Cache interface.
