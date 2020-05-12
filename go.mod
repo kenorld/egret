@@ -12,7 +12,6 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20200217142428-fce0ec30dd00 // indirect
 	github.com/imdario/mergo v0.3.6
 	github.com/jtolds/gls v4.2.1+incompatible // indirect
-	github.com/kenorld/egret-core v0.2.0
 	github.com/klauspost/compress v1.4.1
 	github.com/klauspost/cpuid v1.2.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.1
