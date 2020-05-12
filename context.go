@@ -296,9 +296,6 @@ func (c *Context) ExecuteRender() error {
 			return nil
 		}
 		bytes, err := MainSerializerManager.Serialize(format, c.RenderArgs["Entity"], cast.ToStringMap(c.RenderArgs["serializer.options"]))
-		if format == ContentMarkdown {
-			format = ContentHTML
-		}
 		c.Response.ContentType = format + "; charset=utf-8"
 		c.Response.Write(bytes)
 		return err
