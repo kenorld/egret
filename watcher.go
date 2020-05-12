@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
-	"gopkg.in/fsnotify.v1"
+	"gopkg.in/fsnotify/fsnotify.v1"
 )
 
 // Listener is an interface for receivers of filesystem events.
