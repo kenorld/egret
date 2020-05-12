@@ -62,7 +62,7 @@ func (e *Template) LoadDirectory(dir string, extension string) error {
 					return err
 				}
 
-				buf = blackfriday.MarkdownCommon(buf)
+				buf = blackfriday.Run(buf)
 				if e.Config.Sanitize {
 					buf = bluemonday.UGCPolicy().SanitizeBytes(buf)
 				}
@@ -115,7 +115,7 @@ func (e *Template) LoadAssets(virtualDirectory string, virtualExtension string, 
 			if err != nil {
 				return err
 			}
-			b := blackfriday.MarkdownCommon(buf)
+			b := blackfriday.Run(buf)
 			if e.Config.Sanitize {
 				b = bluemonday.UGCPolicy().SanitizeBytes(b)
 			}
@@ -156,7 +156,7 @@ func (e *Template) ExecuteWriter(out io.Writer, name string, binding interface{}
 // it's super-simple function without options and funcs, it's not used widely
 // implements the TemplateRawExecutor interface
 func (e *Template) ExecuteRaw(src string, wr io.Writer, binding interface{}) (err error) {
-	parsed := blackfriday.MarkdownCommon([]byte(src))
+	parsed := blackfriday.Run([]byte(src))
 	if e.Config.Sanitize {
 		parsed = bluemonday.UGCPolicy().SanitizeBytes(parsed)
 	}
